@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нечіткі множини - Візуалізація</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .chart-box {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            width: 450px;
+        }
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin: 15px 0;
+        }
+        .description {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .highlight {
+            background-color: #fffacd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .key-points {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+        .key-points li {
+            margin-bottom: 5px;
+        }
+        .axis-label {
+            text-align: center;
+            margin-top: 5px;
+            font-style: italic;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Візуалізація нечітких множин</h1>
+    
+    <div class="container">
+        <!-- Графік для "гарячий чай" -->
+        <div class="chart-box">
+            <h2>Функція приналежності: "Гарячий чай"</h2>
+            <div class="chart-container">
+                <canvas id="teaChart"></canvas>
+                <div class="axis-label">Температура чаю (°C)</div>
+            </div>
+            <div class="description">
+                <p>Цей графік показує, як ступінь приналежності до поняття <span class="highlight">"гарячий"</span> змінюється залежно від температури чаю.</p>
+                <ul class="key-points">
+                    <li><strong>До 50°C:</strong> Чай не вважається гарячим (μ=0)</li>
+                    <li><strong>50-70°C:</strong> Плавне зростання приналежності</li>
+                    <li><strong>Після 70°C:</strong> Чай точно гарячий (μ=1)</li>
+                    <li><strong>Точка переходу (μ=0.5):</strong> 60°C</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Графік для "погана відповідь" -->
+        <div class="chart-box">
+            <h2>Функція приналежності: "Погана відповідь"</h2>
+            <div class="chart-container">
+                <canvas id="answerChart"></canvas>
+                <div class="axis-label">Оцінка за відповідь (балів)</div>
+            </div>
+            <div class="description">
+                <p>Цей графік ілюструє, як оцінка за відповідь співвідноситься з поняттям <span class="highlight">"погана"</span>.</p>
+                <ul class="key-points">
+                    <li><strong>До 40 балів:</strong> Відповідь точно погана (μ=1)</li>
+                    <li><strong>40-60 балів:</strong> Плавне зменшення приналежності</li>
+                    <li><strong>Після 60 балів:</strong> Відповідь не погана (μ=0)</li>
+                    <li><strong>Точка переходу (μ=0.5):</strong> 50 балів</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div style="background: #e8f4f8; padding: 20px; border-radius: 8px; margin-top: 30px;">
+        <h2>Пояснення понять</h2>
+        <p><strong>Нечітка множина</strong> - це множина, елементи якої мають різний ступінь приналежності, виражений числом від 0 (не належить) до 1 (повністю належить).</p>
+        <p><strong>Функція приналежності (μ)</strong> - це крива, яка визначає, як кожна точка вхідного простору (наприклад, температура) відображається на ступінь приналежності між 0 і 1.</p>
+        <p><strong>Точка переходу</strong> - це значення, де μ=0.5, тобто коли об'єкт одночасно і належить, і не належить до множини в однаковій мірі.</p>
+    </div>
+
+    <script>
+        // Графік для "гарячий чай"
+        const teaCtx = document.getElementById('teaChart').getContext('2d');
+        const teaChart = new Chart(teaCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 101}, (_, i) => i),
+                datasets: [{
+                    label: 'μ(гарячий)',
+                    data: Array.from({length: 101}, (_, i) => {
+                        if (i <= 50) return 0;
+                        if (i <= 70) return (i - 50) / 20;
+                        return 1;
+                    }),
+                    borderColor: '#e74c3c',
+                    borderWidth: 3,
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 1,
+                        title: {
+                            display: true,
+                            text: 'Ступінь приналежності μ',
+                            font: {
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            stepSize: 0.1,
+                            callback: function(value) {
+                                if (value === 0 || value === 0.5 || value === 0.8 || value === 1) 
+                                    return value;
+                                return '';
+                            }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Температура (°C)',
+                            font: {
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                if (value === 0 || value === 27 || value === 35 || value === 50 || value === 60 || value === 70 || value === 100) 
+                                    return value;
+                                return '';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `μ = ${context.parsed.y.toFixed(2)} при ${context.parsed.x}°C`;
+                            }
+                        }
+                    }
+                },
+                annotation: {
+                    annotations: {
+                        line1: {
+                            type: 'line',
+                            yMin: 0.5,
+                            yMax: 0.5,
+                            borderColor: 'rgb(75, 192, 192)',
+                            borderWidth: 2,
+                            borderDash: [6, 6],
+                            label: {
+                                content: 'Точка переходу (60°C)',
+                                enabled: true,
+                                position: 'right'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Графік для "погана відповідь"
+        const answerCtx = document.getElementById('answerChart').getContext('2d');
+        const answerChart = new Chart(answerCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 101}, (_, i) => i),
+                datasets: [{
+                    label: 'μ(погана)',
+                    data: Array.from({length: 101}, (_, i) => {
+                        if (i <= 40) return 1;
+                        if (i <= 60) return (60 - i) / 20;
+                        return 0;
+                    }),
+                    borderColor: '#3498db',
+                    borderWidth: 3,
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 1,
+                        title: {
+                            display: true,
+                            text: 'Ступінь приналежності μ',
+                            font: {
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            stepSize: 0.1,
+                            callback: function(value) {
+                                if (value === 0 || value === 0.5 || value === 1) 
+                                    return value;
+                                return '';
+                            }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Оцінка (балів)',
+                            font: {
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                if (value === 0 || value === 40 || value === 50 || value === 60 || value === 100) 
+                                    return value;
+                                return '';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `μ = ${context.parsed.y.toFixed(2)} при ${context.parsed.x} балах`;
+                            }
+                        }
+                    }
+                },
+                annotation: {
+                    annotations: {
+                        line1: {
+                            type: 'line',
+                            yMin: 0.5,
+                            yMax: 0.5,
+                            borderColor: 'rgb(75, 192, 192)',
+                            borderWidth: 2,
+                            borderDash: [6, 6],
+                            label: {
+                                content: 'Точка переходу (50 балів)',
+                                enabled: true,
+                                position: 'right'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
